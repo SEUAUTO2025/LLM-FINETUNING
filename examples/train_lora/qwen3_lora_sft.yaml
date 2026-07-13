@@ -1,0 +1,51 @@
+### model
+model_name_or_path: Qwen/Qwen3-4B-Instruct-2507  # 基础模型的 Hugging Face ID 或本地模型目录
+trust_remote_code: true  # 允许加载模型仓库中的自定义代码；仅对可信模型开启
+
+### method
+stage: sft  # 训练阶段：sft 表示监督微调
+do_train: true  # 执行训练流程；false 时不更新模型参数
+finetuning_type: lora  # 使用 LoRA 参数高效微调，基础模型参数保持冻结
+lora_rank: 8  # LoRA 低秩矩阵的秩；越大容量和显存占用越高
+lora_target: all  # 给所有支持的线性层添加 LoRA，也可指定 q_proj、v_proj 等模块
+
+### dataset
+dataset: identity,alpaca_en_demo  # 训练数据集名称；多个已注册数据集使用逗号分隔
+template: qwen3_nothink  # 使用 Qwen3 非思考模式的对话模板构造 prompt
+cutoff_len: 2048  # 分词后单条样本的最大 token 数，超出部分会被截断
+max_samples: 1000  # 每个数据集最多使用 1000 条样本；正式训练可删除此项
+preprocessing_num_workers: 16  # 并行执行数据转换和分词的进程数
+dataloader_num_workers: 4  # 训练期间并行加载 batch 的后台进程数
+
+### output
+output_dir: saves/qwen3-4b/lora/sft/exp1  # LoRA 权重、检查点、指标和日志的输出目录
+logging_dir: /root/tf-logs/finetuning_study/qwen3_4b/lora/sft/exp1
+logging_steps: 10  # 每 10 个参数更新步骤记录一次 loss 和学习率
+save_steps: 20  # 每 500 个参数更新步骤保存一次检查点
+save_total_limit: 3 #最多共存三个模型
+load_best_model_at_end: true #始终保存历史最佳
+metric_for_best_model: eval_loss #判定指标
+greater_is_better: false #eval_loss越小越好
+
+plot_loss: true  # 训练结束后在输出目录生成 loss 曲线
+overwrite_output_dir: true  # 允许使用已有且非空的输出目录，可能覆盖同名文件
+save_only_model: false  # false 会同时保存优化器等状态，以支持断点续训
+report_to: tensorboard  # 指标上报后端：[none, wandb, tensorboard, swanlab, mlflow]
+
+### train
+per_device_train_batch_size: 1  # 每张 GPU 每次前向/反向传播处理的样本数
+gradient_accumulation_steps: 8 # 累积 1 次梯度后更新参数；单卡有效 batch size 为 16
+learning_rate: 1.0e-4  # LoRA 参数的峰值学习率
+num_train_epochs: 3.0  # 完整遍历训练数据 3 次；设置 max_steps 时会被其覆盖
+lr_scheduler_type: cosine  # 预热后按余弦曲线逐渐降低学习率
+warmup_ratio: 0.1  # 前 10% 的参数更新步骤用于学习率预热
+bf16: true  # 使用 BF16 混合精度训练；需要 GPU 支持 BF16
+ddp_timeout: 180000000  # 分布式进程通信超时时间，单位为秒
+resume_from_checkpoint: null  # 不指定检查点；填写 checkpoint-N 目录可断点续训
+
+### eval
+# eval_dataset: alpaca_en_demo  # 独立验证集；不能与 val_size 同时使用，也应避免和训练集重合
+val_size: 0.1  # 从训练集随机划出 10% 作为验证集；取消注释后才会自动划分
+per_device_eval_batch_size: 16  # 每张 GPU 的验证 batch size
+eval_strategy: steps  # 按参数更新步数触发验证；也可设为 epoch
+eval_steps: 20  # eval_strategy=steps 时，每 500 个更新步骤验证一次
