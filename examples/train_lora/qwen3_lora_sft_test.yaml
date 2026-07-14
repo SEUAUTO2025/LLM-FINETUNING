@@ -1,0 +1,52 @@
+### model
+model_name_or_path: Qwen/Qwen3-4B-Instruct-2507  # 保持与正式训练相同的基础模型
+trust_remote_code: true
+
+### method
+stage: sft
+do_train: true
+finetuning_type: lora
+lora_rank: 8
+lora_target: all
+
+### dataset
+dataset: identity,alpaca_en_demo
+template: qwen3_nothink
+cutoff_len: 2048  # 保持正式长度，用于真实检查显存是否足够
+max_samples: 16  # 每个数据集最多取 16 条，两个数据集最多共 32 条
+preprocessing_num_workers: 2
+dataloader_num_workers: 0
+
+### output：路径保持不变，运行测试会写入这些目录
+output_dir: saves/qwen3-4b/lora/sft/exp1
+logging_dir: saves/logs/qwen3-4b/lora/sft/exp1
+logging_steps: 1
+save_strategy: steps
+save_steps: 2
+save_total_limit: 2
+load_best_model_at_end: true
+metric_for_best_model: eval_loss
+greater_is_better: false
+plot_loss: true
+overwrite_output_dir: true
+save_only_model: false
+report_to: tensorboard
+
+### train
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 8
+learning_rate: 1.0e-4
+num_train_epochs: 3.0  # max_steps 设置后，此项不再控制停止时间
+max_steps: 5  # 只更新 5 次参数，用于验证完整训练链路
+lr_scheduler_type: cosine
+warmup_ratio: 0.1
+bf16: true
+ddp_timeout: 180000000
+resume_from_checkpoint: null
+
+### eval
+do_eval: true
+val_size: 0.2  # 从小样本训练数据中划出 20% 做验证
+per_device_eval_batch_size: 1
+eval_strategy: steps
+eval_steps: 2

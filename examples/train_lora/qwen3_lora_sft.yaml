@@ -13,7 +13,7 @@ lora_target: all  # 给所有支持的线性层添加 LoRA，也可指定 q_proj
 dataset: identity,alpaca_en_demo  # 训练数据集名称；多个已注册数据集使用逗号分隔
 template: qwen3_nothink  # 使用 Qwen3 非思考模式的对话模板构造 prompt
 cutoff_len: 2048  # 分词后单条样本的最大 token 数，超出部分会被截断
-max_samples: 1000  # 每个数据集最多使用 1000 条样本；正式训练可删除此项
+# max_samples: 1000  # 每个数据集最多使用 1000 条样本；正式训练可删除此项
 preprocessing_num_workers: 16  # 并行执行数据转换和分词的进程数
 dataloader_num_workers: 4  # 训练期间并行加载 batch 的后台进程数
 
