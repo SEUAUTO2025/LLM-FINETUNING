@@ -19,7 +19,7 @@ dataloader_num_workers: 0
 
 ### output：路径保持不变，运行测试会写入这些目录
 output_dir: saves/qwen3-4b/lora/sft/exp1
-logging_dir: saves/logs/qwen3-4b/lora/sft/exp1
+# TensorBoard 路径通过环境变量设置：TENSORBOARD_LOGGING_DIR=saves/logs/qwen3-4b/lora/sft/exp1
 logging_steps: 1
 save_strategy: steps
 save_steps: 2
@@ -39,8 +39,8 @@ learning_rate: 1.0e-4
 num_train_epochs: 3.0  # max_steps 设置后，此项不再控制停止时间
 max_steps: 5  # 只更新 5 次参数，用于验证完整训练链路
 lr_scheduler_type: cosine
-warmup_ratio: 0.1
-bf16: true
+warmup_steps: 1  # 5 个测试步骤中的第 1 步用于学习率预热
+fp16: true
 ddp_timeout: 180000000
 resume_from_checkpoint: null
 

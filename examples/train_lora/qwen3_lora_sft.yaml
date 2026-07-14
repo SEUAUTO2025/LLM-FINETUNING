@@ -19,7 +19,7 @@ dataloader_num_workers: 4  # 训练期间并行加载 batch 的后台进程数
 
 ### output
 output_dir: saves/qwen3-4b/lora/sft/exp1  # LoRA 权重、检查点、指标和日志的输出目录
-logging_dir: saves/logs/qwen3-4b/lora/sft/exp1  # TensorBoard 日志的输出目录
+# TensorBoard 路径通过环境变量设置：TENSORBOARD_LOGGING_DIR=saves/logs/qwen3-4b/lora/sft/exp1
 logging_steps: 10  # 每 10 个参数更新步骤记录一次 loss 和学习率
 save_steps: 20  # 每 20 个参数更新步骤保存一次检查点
 save_total_limit: 3 #最多共存三个模型
@@ -34,12 +34,12 @@ report_to: tensorboard  # 指标上报后端：[none, wandb, tensorboard, swanla
 
 ### train
 per_device_train_batch_size: 1  # 每张 GPU 每次前向/反向传播处理的样本数
-gradient_accumulation_steps: 8 # 累积 1 次梯度后更新参数；单卡有效 batch size 为 16
+gradient_accumulation_steps: 8  # 累积 8 次梯度后更新参数；单卡有效 batch size 为 8，双卡为 16
 learning_rate: 1.0e-4  # LoRA 参数的峰值学习率
 num_train_epochs: 3.0  # 完整遍历训练数据 3 次；设置 max_steps 时会被其覆盖
 lr_scheduler_type: cosine  # 预热后按余弦曲线逐渐降低学习率
-warmup_ratio: 0.1  # 前 10% 的参数更新步骤用于学习率预热
-bf16: true  # 使用 BF16 混合精度训练；需要 GPU 支持 BF16
+warmup_steps: 20  # 固定使用前 20 个参数更新步骤进行学习率预热
+fp16: true  # 使用 FP16 混合精度训练
 ddp_timeout: 180000000  # 分布式进程通信超时时间，单位为秒
 resume_from_checkpoint: null  # 不指定检查点；填写 checkpoint-N 目录可断点续训
 
